@@ -1062,7 +1062,7 @@ function PlayPageClient() {
       artPlayerRef.current.title = `${videoTitle} - 第${
         currentEpisodeIndex + 1
       }集`;
-      artPlayerRef.current.poster = videoCover;
+      artPlayerRef.current.poster = processImageUrl(videoCover);
       if (artPlayerRef.current?.video) {
         ensureVideoSource(
           artPlayerRef.current.video as HTMLVideoElement,
@@ -1090,7 +1090,7 @@ function PlayPageClient() {
       artPlayerRef.current = new Artplayer({
         container: artRef.current,
         url: videoUrl,
-        poster: videoCover,
+        poster: processImageUrl(videoCover),
         volume: 0.7,
         isLive: false,
         muted: false,
