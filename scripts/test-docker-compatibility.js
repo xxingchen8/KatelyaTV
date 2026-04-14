@@ -27,7 +27,7 @@ function convertEdgeToNodeRuntime() {
       
       if (stat.isDirectory()) {
         findRouteFiles(fullPath);
-      } else if (file === 'route.ts') {
+      } else if (file === 'route.ts' || file === 'layout.tsx' || file === 'page.tsx') {
         routeFiles.push(fullPath);
       }
     }
