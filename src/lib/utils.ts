@@ -34,10 +34,7 @@ export function getImageProxyUrl(): string | null {
 export function processImageUrl(originalUrl: string): string {
   if (!originalUrl) return originalUrl;
 
-  const proxyUrl = getImageProxyUrl();
-  if (!proxyUrl) return originalUrl;
-
-  return `${proxyUrl}${encodeURIComponent(originalUrl)}`;
+  return `/api/image-proxy?url=${encodeURIComponent(originalUrl)}`;
 }
 
 /**
