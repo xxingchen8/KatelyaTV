@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工程造价管理系统</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .file-label:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .status {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 20px;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .status.success {
+            border-left-color: #28a745;
+            color: #28a745;
+        }
+
+        .status.error {
+            border-left-color: #dc3545;
+            color: #dc3545;
+        }
+
+        .table-container {
+            padding: 30px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            background: white;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 16px 12px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+
+        tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+
+        tbody tr:nth-child(even):hover {
+            background-color: #f1f3f5;
+        }
+
+        tfoot {
+            background: #e9ecef;
+            font-weight: 600;
+        }
+
+        tfoot td {
+            padding: 16px 12px;
+            border: 1px solid #dee2e6;
+        }
+
+        .editable-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 13px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .editable-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .text-left {
+            text-align: left !important;
+        }
+
+        .text-right {
+            text-align: right !important;
+        }
+
+        .no-data {
+            padding: 60px 30px;
+            text-align: center;
+            color: #6c757d;
+        }
+
+        .no-data-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .no-data-text {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .no-data-hint {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .highlight {
+            background-color: #fff3cd !important;
+        }
+
+        .positive {
+            color: #28a745;
+        }
+
+        .negative {
+            color: #dc3545;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .controls {
+                padding: 20px;
+            }
+
+            .table-container {
+                padding: 20px;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 工程造价管理系统</h1>
+            <p>工程进度跟踪与成本计算工具</p>
+        </div>
+
+        <div class="controls">
+            <label for="fileInput" class="file-label">
+                📁 上传Excel文件
+            </label>
+            <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls">
+            <button class="btn btn-danger" id="clearBtn" style="display: none;">🗑️ 清空数据</button>
+            <button class="btn btn-success" id="exportBtn" style="display: none;">💾 导出Excel</button>
+            <div class="status" id="status">等待上传Excel文件...</div>
+        </div>
+
+        <div class="table-container" id="tableContainer">
+            <div class="no-data">
+                <div class="no-data-icon">📋</div>
+                <div class="no-data-text">暂无数据</div>
+                <div class="no-data-hint">请上传包含"分部分项目工程和单价计量项目清单与计价表"的Excel文件</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STATE_KEY = 'engineeringCostData';
+        let projectData = [];
+        let progressData = {};
+
+        function loadFromStorage() {
+            const saved = localStorage.getItem(STATE_KEY);
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    projectData = data.projects || [];
+                    progressData = data.progress || {};
+                    return true;
+                } catch (e) {
+                    console.error('Failed to load data from storage:', e);
+                }
+            }
+            return false;
+        }
+
+        function saveToStorage() {
+            const data = {
+                projects: projectData,
+                progress: progressData,
+                lastUpdate: new Date().toISOString()
+            };
+            localStorage.setItem(STATE_KEY, JSON.stringify(data));
+        }
+
+        function findTitleRow(sheet) {
+            const range = XLSX.utils.decode_range(sheet['!ref']);
+            const targetTitle = '分部分项目工程和单价计量项目清单与计价表';
+            
+            for (let row = range.s.r; row <= Math.min(range.s.r + 20, range.e.r); row++) {
+                for (let col = range.s.c; col <= range.e.c; col++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+                    const cell = sheet[cellAddress];
+                    if (cell && cell.v && typeof cell.v === 'string' && cell.v.includes(targetTitle)) {
+                        return row;
+                    }
+                }
+            }
+            return -1;
+        }
+
+        function findHeaderRow(sheet, startRow) {
+            const range = XLSX.utils.decode_range(sheet['!ref']);
+            const requiredHeaders = ['序号', '项目编码', '项目名称', '计量单位', '工程量', '综合单价', '合计'];
+            
+            for (let row = startRow; row <= Math.min(startRow + 10, range.e.r); row++) {
+                let matchCount = 0;
+                const rowData = [];
+                
+                for (let col = range.s.c; col <= range.e.c; col++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+                    const cell = sheet[cellAddress];
+                    const value = cell ? (cell.v || '').toString().trim() : '';
+                    rowData.push(value);
+                    
+                    if (requiredHeaders.some(header => value.includes(header))) {
+                        matchCount++;
+                    }
+                }
+                
+                if (matchCount >= 5) {
+                    return { row, headers: rowData };
+                }
+            }
+            return null;
+        }
+
+        function getColumnIndex(headers, searchTerms) {
+            for (let i = 0; i < headers.length; i++) {
+                const header = headers[i].toString().trim();
+                if (searchTerms.some(term => header.includes(term))) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        function parseExcelFile(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    
+                    const titleRow = findTitleRow(firstSheet);
+                    if (titleRow === -1) {
+                        updateStatus('未找到标题"分部分项目工程和单价计量项目清单与计价表"', 'error');
+                        return;
+                    }
+                    
+                    const headerInfo = findHeaderRow(firstSheet, titleRow + 1);
+                    if (!headerInfo) {
+                        updateStatus('未找到表头行（序号、项目编码等）', 'error');
+                        return;
+                    }
+                    
+                    const { row: headerRow, headers } = headerInfo;
+                    const range = XLSX.utils.decode_range(firstSheet['!ref']);
+                    
+                    const colMap = {
+                        序号: getColumnIndex(headers, ['序号']),
+                        项目编码: getColumnIndex(headers, ['项目编码', '编码']),
+                        项目名称: getColumnIndex(headers, ['项目名称', '名称']),
+                        计量单位: getColumnIndex(headers, ['计量单位', '单位']),
+                        工程量: getColumnIndex(headers, ['工程量', '数量']),
+                        综合单价: getColumnIndex(headers, ['综合单价', '单价']),
+                        合计: getColumnIndex(headers, ['合计', '金额'])
+                    };
+                    
+                    const missingCols = Object.entries(colMap).filter(([k, v]) => v === -1).map(([k]) => k);
+                    if (missingCols.length > 0) {
+                        updateStatus(`缺少必要列: ${missingCols.join('、')}`, 'error');
+                        return;
+                    }
+                    
+                    projectData = [];
+                    let dataStartRow = headerRow + 1;
+                    
+                    for (let row = dataStartRow; row <= range.e.r; row++) {
+                        const serialCell = firstSheet[XLSX.utils.encode_cell({ r: row, c: colMap.序号 })];
+                        const serialValue = serialCell ? (serialCell.v || '').toString().trim() : '';
+                        
+                        if (!serialValue || serialValue === '' || isNaN(parseInt(serialValue))) {
+                            continue;
+                        }
+                        
+                        const rowData = {
+                            序号: serialValue,
+                            项目编码: getCellValue(firstSheet, row, colMap.项目编码),
+                            项目名称: getCellValue(firstSheet, row, colMap.项目名称),
+                            计量单位: getCellValue(firstSheet, row, colMap.计量单位),
+                            工程量: parseFloat(getCellValue(firstSheet, row, colMap.工程量)) || 0,
+                            综合单价: parseFloat(getCellValue(firstSheet, row, colMap.综合单价)) || 0,
+                            合计: parseFloat(getCellValue(firstSheet, row, colMap.合计)) || 0
+                        };
+                        
+                        if (rowData.项目编码 || rowData.项目名称) {
+                            projectData.push(rowData);
+                        }
+                    }
+                    
+                    if (projectData.length === 0) {
+                        updateStatus('未找到有效数据行', 'error');
+                        return;
+                    }
+                    
+                    saveToStorage();
+                    renderTable();
+                    updateStatus(`成功加载 ${projectData.length} 条数据`, 'success');
+                    
+                    document.getElementById('clearBtn').style.display = 'inline-flex';
+                    document.getElementById('exportBtn').style.display = 'inline-flex';
+                } catch (error) {
+                    updateStatus('解析Excel文件失败: ' + error.message, 'error');
+                    console.error(error);
+                }
+            };
+            
+            reader.onerror = function() {
+                updateStatus('读取文件失败', 'error');
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        function getCellValue(sheet, row, col) {
+            const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+            const cell = sheet[cellAddress];
+            return cell ? (cell.v || '').toString().trim() : '';
+        }
+
+        function updateStatus(message, type = '') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = 'status';
+            if (type) {
+                statusEl.classList.add(type);
+            }
+        }
+
+        function renderTable() {
+            const container = document.getElementById('tableContainer');
+            
+            if (projectData.length === 0) {
+                container.innerHTML = `
+                    <div class="no-data">
+                        <div class="no-data-icon">📋</div>
+                        <div class="no-data-text">暂无数据</div>
+                        <div class="no-data-hint">请上传包含"分部分项目工程和单价计量项目清单与计价表"的Excel文件</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>项目编码</th>
+                            <th>项目名称</th>
+                            <th>计量单位</th>
+                            <th>工程量</th>
+                            <th>综合单价</th>
+                            <th>合计</th>
+                            <th style="background: #28a745;">工程数量<br>（可编辑）</th>
+                            <th style="background: #17a2b8;">当日完成数量</th>
+                            <th style="background: #17a2b8;">累计完成数量</th>
+                            <th style="background: #ffc107; color: #000;">当日完成金额</th>
+                            <th style="background: #ffc107; color: #000;">累计完成金额</th>
+                            <th style="background: #6c757d;">剩余工程量</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            let totalOriginal = 0;
+            let totalDailyAmount = 0;
+            let totalCumulativeAmount = 0;
+            let totalRemaining = 0;
+            
+            projectData.forEach((project, index) => {
+                const key = `${project.序号}_${project.项目编码}`;
+                if (!progressData[key]) {
+                    progressData[key] = {
+                        history: [],
+                        current: 0
+                    };
+                }
+                
+                const currentInput = progressData[key].current || 0;
+                const dailyComplete = currentInput;
+                const cumulativeComplete = progressData[key].history.reduce((sum, val) => sum + val, 0) + currentInput;
+                const dailyAmount = dailyComplete * project.综合单价;
+                const cumulativeAmount = cumulativeComplete * project.综合单价;
+                const remaining = project.工程量 - cumulativeComplete;
+                
+                totalOriginal += project.合计;
+                totalDailyAmount += dailyAmount;
+                totalCumulativeAmount += cumulativeAmount;
+                totalRemaining += remaining;
+                
+                const remainingClass = remaining < 0 ? 'negative' : remaining > 0 ? 'positive' : '';
+                
+                html += `
+                    <tr>
+                        <td>${project.序号}</td>
+                        <td class="text-left">${project.项目编码}</td>
+                        <td class="text-left">${project.项目名称}</td>
+                        <td>${project.计量单位}</td>
+                        <td class="text-right">${project.工程量.toFixed(2)}</td>
+                        <td class="text-right">${project.综合单价.toFixed(2)}</td>
+                        <td class="text-right">${project.合计.toFixed(2)}</td>
+                        <td>
+                            <input 
+                                type="number" 
+                                class="editable-input" 
+                                value="${currentInput}"
+                                step="0.01"
+                                data-index="${index}"
+                                data-key="${key}"
+                                onchange="updateProgress(this)"
+                            >
+                        </td>
+                        <td class="text-right">${dailyComplete.toFixed(2)}</td>
+                        <td class="text-right">${cumulativeComplete.toFixed(2)}</td>
+                        <td class="text-right">${dailyAmount.toFixed(2)}</td>
+                        <td class="text-right">${cumulativeAmount.toFixed(2)}</td>
+                        <td class="text-right ${remainingClass}">${remaining.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="6" style="text-align: right;">合计</td>
+                            <td class="text-right">${totalOriginal.toFixed(2)}</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td class="text-right">${totalDailyAmount.toFixed(2)}</td>
+                            <td class="text-right">${totalCumulativeAmount.toFixed(2)}</td>
+                            <td class="text-right">${totalRemaining.toFixed(2)}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        function updateProgress(input) {
+            const key = input.dataset.key;
+            const value = parseFloat(input.value) || 0;
+            
+            if (!progressData[key]) {
+                progressData[key] = {
+                    history: [],
+                    current: 0
+                };
+            }
+            
+            if (progressData[key].current !== 0) {
+                progressData[key].history.push(progressData[key].current);
+            }
+            
+            progressData[key].current = value;
+            
+            saveToStorage();
+            renderTable();
+            updateStatus('数据已更新并保存', 'success');
+        }
+
+        function clearAllData() {
+            if (confirm('确定要清空所有数据吗？此操作不可恢复！')) {
+                projectData = [];
+                progressData = {};
+                localStorage.removeItem(STATE_KEY);
+                renderTable();
+                updateStatus('数据已清空');
+                document.getElementById('clearBtn').style.display = 'none';
+                document.getElementById('exportBtn').style.display = 'none';
+            }
+        }
+
+        function exportToExcel() {
+            const exportData = projectData.map(project => {
+                const key = `${project.序号}_${project.项目编码}`;
+                const currentInput = progressData[key]?.current || 0;
+                const dailyComplete = currentInput;
+                const cumulativeComplete = (progressData[key]?.history || []).reduce((sum, val) => sum + val, 0) + currentInput;
+                const dailyAmount = dailyComplete * project.综合单价;
+                const cumulativeAmount = cumulativeComplete * project.综合单价;
+                const remaining = project.工程量 - cumulativeComplete;
+                
+                return {
+                    '序号': project.序号,
+                    '项目编码': project.项目编码,
+                    '项目名称': project.项目名称,
+                    '计量单位': project.计量单位,
+                    '工程量': project.工程量,
+                    '综合单价': project.综合单价,
+                    '合计': project.合计,
+                    '工程数量': currentInput,
+                    '当日完成数量': dailyComplete,
+                    '累计完成数量': cumulativeComplete,
+                    '当日完成金额': dailyAmount,
+                    '累计完成金额': cumulativeAmount,
+                    '剩余工程量': remaining
+                };
+            });
+            
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            
+            const colWidths = [
+                { wch: 8 },
+                { wch: 15 },
+                { wch: 30 },
+                { wch: 10 },
+                { wch: 12 },
+                { wch: 12 },
+                { wch: 12 },
+                { wch: 12 },
+                { wch: 15 },
+                { wch: 15 },
+                { wch: 15 },
+                { wch: 15 },
+                { wch: 15 }
+            ];
+            ws['!cols'] = colWidths;
+            
+            XLSX.utils.book_append_sheet(wb, ws, '工程造价数据');
+            
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+            XLSX.writeFile(wb, `工程造价数据_${timestamp}.xlsx`);
+            
+            updateStatus('导出成功', 'success');
+        }
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                updateStatus('正在解析文件...', '');
+                parseExcelFile(file);
+            }
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', clearAllData);
+        document.getElementById('exportBtn').addEventListener('click', exportToExcel);
+
+        window.updateProgress = updateProgress;
+
+        if (loadFromStorage() && projectData.length > 0) {
+            renderTable();
+            updateStatus(`已加载 ${projectData.length} 条历史数据`, 'success');
+            document.getElementById('clearBtn').style.display = 'inline-flex';
+            document.getElementById('exportBtn').style.display = 'inline-flex';
+        }
+    </script>
+</body>
+</html>
